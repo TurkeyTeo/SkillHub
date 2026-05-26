@@ -1,0 +1,4 @@
+interface:
+  display_name: "DoseCare Hatch Pet"
+  short_description: "Hatch painterly DoseCare companion pets"
+  default_prompt: "Use $dosecare-hatch-pet to create a painterly 8x9 DoseCare companion pet from a concept or reference image."
