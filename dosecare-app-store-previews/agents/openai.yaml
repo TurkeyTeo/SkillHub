@@ -1,0 +1,5 @@
+interface:
+  display_name: "DoseCare Previews"
+  short_description: "Generate DoseCare App Store previews"
+  default_prompt: "Use $dosecare-app-store-previews to generate localized DoseCare App Store preview images from simulator screenshots."
+
