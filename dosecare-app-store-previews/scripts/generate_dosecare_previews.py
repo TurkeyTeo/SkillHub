@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 
-CANVAS_SIZE = (1290, 2796)
+CANVAS_SIZE = (1284, 2778)
 OUTPUT_ROOT = Path("output/app-store-previews")
 
 LOCALES = {
@@ -168,30 +168,51 @@ def extract_nuomi(screenshot_path: Path, locale: str) -> Image.Image:
     else:
         cat_box = (895, 1840, 1060, 2118)
     cat = screenshot.crop(cat_box)
-
     sticker = Image.new("RGBA", (330, 330), (0, 0, 0, 0))
     shadow = Image.new("RGBA", (330, 330), (0, 0, 0, 0))
     shadow_draw = ImageDraw.Draw(shadow)
-    shadow_draw.ellipse((32, 38, 300, 306), fill=(118, 72, 80, 40))
+    shadow_draw.ellipse((36, 34, 304, 302), fill=(118, 72, 80, 38))
     shadow = shadow.filter(ImageFilter.GaussianBlur(18))
     sticker.alpha_composite(shadow)
 
-    back = Image.new("RGBA", (286, 286), (255, 255, 255, 238))
-    back_mask = Image.new("L", (286, 286), 0)
-    ImageDraw.Draw(back_mask).ellipse((0, 0, 286, 286), fill=255)
-    sticker.paste(back, (22, 18), back_mask)
+    circle_box = (34, 22, 306, 294)
+    ImageDraw.Draw(sticker).ellipse(circle_box, fill=(255, 255, 255, 248))
 
-    cat = cat.resize((214, 320), Image.Resampling.LANCZOS)
-    cat_mask = Image.new("L", cat.size, 0)
-    ImageDraw.Draw(cat_mask).ellipse((0, 0, cat.width, cat.height + 24), fill=255)
-    cat.putalpha(Image.composite(cat.getchannel("A"), Image.new("L", cat.size, 0), cat_mask))
-    sticker.alpha_composite(cat, (58, 10))
+    cat = cat.resize((224, 320), Image.Resampling.LANCZOS)
+    pixels = cat.load()
+    for y in range(cat.height):
+        for x in range(cat.width):
+            r, g, b, a = pixels[x, y]
+            is_plain_light_background = min(r, g, b) > 218 and max(r, g, b) - min(r, g, b) < 24
+            if is_plain_light_background:
+                pixels[x, y] = (r, g, b, 0)
+            else:
+                pixels[x, y] = (r, g, b, a)
+    circle_mask = Image.new("L", cat.size, 0)
+    ImageDraw.Draw(circle_mask).ellipse((0, 0, cat.width, cat.height), fill=255)
+    cat.putalpha(Image.composite(cat.getchannel("A"), Image.new("L", cat.size, 0), circle_mask))
+    bbox = cat.getchannel("A").getbbox()
+    if bbox:
+        cat = cat.crop(bbox)
+    target_h = 246
+    target_w = round(cat.width * target_h / cat.height)
+    cat = cat.resize((target_w, target_h), Image.Resampling.LANCZOS)
+    sticker.alpha_composite(cat, ((330 - target_w) // 2, 42))
     return sticker
 
 
 def draw_sparkle(draw: ImageDraw.ImageDraw, center: tuple[int, int], size: int) -> None:
     x, y = center
-    points = [(x, y - size), (x + 8, y - 8), (x + size, y), (x + 8, y + 8), (x, y + size), (x - 8, y + 8), (x - size, y), (x - 8, y - 8)]
+    points = [
+        (x, y - size),
+        (x + size // 3, y - size // 3),
+        (x + size, y),
+        (x + size // 3, y + size // 3),
+        (x, y + size),
+        (x - size // 3, y + size // 3),
+        (x - size, y),
+        (x - size // 3, y - size // 3),
+    ]
     draw.polygon(points, fill=(255, 199, 57))
 
 
@@ -289,7 +310,7 @@ def main() -> None:
     for index, path in enumerate(screenshots):
         preview = create_preview(index, path, args.locale, locale_data["copy"])
         output_path = output_dir / f"dosecare-preview-{index + 1:02d}.png"
-        preview.save(output_path)
+        preview.convert("RGB").save(output_path)
         generated.append(output_path)
         print(output_path)
 

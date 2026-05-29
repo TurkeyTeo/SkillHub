@@ -7,7 +7,7 @@ description: Generate polished localized DoseCare App Store preview images from 
 
 ## Overview
 
-Create consistent 1290 x 2796 App Store preview images for DoseCare. The bundled script places simulator screenshots inside a soft rounded device frame, adds localized marketing copy, uses a blush-to-warm-white background, and can create a contact sheet for quick visual review.
+Create consistent 1284 x 2778 RGB App Store preview images for DoseCare. The bundled script places simulator screenshots inside a soft rounded device frame, adds localized marketing copy, uses a blush-to-warm-white background, removes alpha channels before saving, and can create a contact sheet for quick visual review.
 
 ## Workflow
 
@@ -18,7 +18,8 @@ Create consistent 1290 x 2796 App Store preview images for DoseCare. The bundled
    - Medicine Box / Profile
 2. Run the bundled script from the DoseCare repo root.
 3. Inspect the generated contact sheet before reporting completion.
-4. If text overflows, reduce title length first, then adjust locale-specific font sizes in the script.
+4. Verify every PNG is `1284 x 2778` and RGB/non-alpha before reporting completion.
+5. If text overflows, reduce title length first, then adjust locale-specific font sizes in the script.
 
 ## Quick Commands
 
@@ -53,11 +54,21 @@ The script also writes:
 /private/tmp/dosecare-previews-<locale>-contact-sheet.jpg
 ```
 
+## Validation
+
+Always run:
+
+```bash
+file output/app-store-previews/<locale>/dosecare-preview-*.png
+```
+
+The result must not mention `RGBA`, `alpha`, or transparency. If it does, convert the files to RGB and fix the script before finishing.
+
 ## Style Rules
 
 - Keep the pure soft blush-to-warm-white gradient; avoid bubbles, orbs, or decorative clutter.
+- Save final PNGs as RGB only; do not leave alpha channels.
 - Keep all languages visually aligned as one campaign.
 - Add Nuomi only on the first preview, extracted from the reminder screenshot when possible.
 - Prefer short localized titles; App Store preview text should scan quickly.
 - Use the app theme coral as the accent, with dark text and muted subtitles.
-
