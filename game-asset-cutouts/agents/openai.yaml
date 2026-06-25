@@ -1,0 +1,7 @@
+interface:
+  display_name: "Game Asset Cutouts"
+  short_description: "Extract game sprites from matte sheets"
+  default_prompt: "Use $game-asset-cutouts to turn a design image into white/black matte sheets and transparent game PNGs."
+
+policy:
+  allow_implicit_invocation: true
